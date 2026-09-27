@@ -1,0 +1,20 @@
+name: New rule or detector
+description: Propose a new tamper check
+labels: ["enhancement", "rule"]
+body:
+  - type: textarea
+    id: technique
+    attributes:
+      label: Forgery technique
+      description: What does the forger do, and what trace does it leave?
+    validations:
+      required: true
+  - type: textarea
+    id: benign
+    attributes:
+      label: Legitimate workflows that leave a similar trace
+      description: Every rule needs a false-positive story.
+  - type: textarea
+    id: sources
+    attributes:
+      label: References

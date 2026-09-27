@@ -1,0 +1,34 @@
+name: False positive
+description: A genuine document was flagged SUSPICIOUS or INCONCLUSIVE
+labels: ["false positive"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Never attach real personal documents.** Recreate the problem with `tamperlint demo-files`
+        or a document you made yourself, or describe the file's structure instead.
+  - type: input
+    id: rules
+    attributes:
+      label: Rule IDs that fired
+      placeholder: TL-OVL-001, TL-GEO-002
+    validations:
+      required: true
+  - type: textarea
+    id: origin
+    attributes:
+      label: How was the document produced?
+      description: Issuing software or portal, and anything done to it afterwards (signed, compressed, printed to PDF, commented).
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: tamperlint output
+      description: Paste `tamperlint check <file> -f json`, with personal values removed.
+      render: json
+  - type: input
+    id: version
+    attributes:
+      label: tamperlint version
+      placeholder: "0.1.0"

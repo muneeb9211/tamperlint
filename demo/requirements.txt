@@ -1,0 +1,3 @@
+# Hugging Face Space requirements. Switch to a pinned release (tamperlint[synth,demo]==0.1.0)
+# once tamperlint is published on PyPI.
+tamperlint[synth,demo] @ git+https://github.com/muneeb9211/tamperlint.git

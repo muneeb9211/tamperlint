@@ -1,0 +1,244 @@
+{
+  "tamperlint": "0.1.0.dev0",
+  "python": "3.14.6",
+  "seeds": 10,
+  "median_seconds_per_file": 0.22021239999958198,
+  "rows": [
+    {
+      "technique": "statement",
+      "group": "genuine",
+      "input": "pdf",
+      "description": "Genuine statement",
+      "n": 10,
+      "suspicious": 0,
+      "inconclusive": 0,
+      "intact": 10,
+      "top_rules": []
+    },
+    {
+      "technique": "invoice",
+      "group": "genuine",
+      "input": "pdf",
+      "description": "Genuine invoice",
+      "n": 10,
+      "suspicious": 0,
+      "inconclusive": 0,
+      "intact": 10,
+      "top_rules": []
+    },
+    {
+      "technique": "linearized",
+      "group": "benign-edit",
+      "input": "pdf",
+      "description": "Fast-web-view optimisation",
+      "n": 10,
+      "suspicious": 0,
+      "inconclusive": 0,
+      "intact": 10,
+      "top_rules": []
+    },
+    {
+      "technique": "resaved",
+      "group": "benign-edit",
+      "input": "pdf",
+      "description": "Full rewrite by another tool",
+      "n": 10,
+      "suspicious": 0,
+      "inconclusive": 0,
+      "intact": 10,
+      "top_rules": []
+    },
+    {
+      "technique": "sticky-note",
+      "group": "benign-edit",
+      "input": "pdf",
+      "description": "Reviewer comment added",
+      "n": 10,
+      "suspicious": 0,
+      "inconclusive": 0,
+      "intact": 10,
+      "top_rules": [
+        "TL-META-004"
+      ]
+    },
+    {
+      "technique": "signed",
+      "group": "benign-edit",
+      "input": "pdf",
+      "description": "Digitally signed",
+      "n": 10,
+      "suspicious": 0,
+      "inconclusive": 0,
+      "intact": 10,
+      "top_rules": [
+        "TL-META-004"
+      ]
+    },
+    {
+      "technique": "signed+note",
+      "group": "benign-edit",
+      "input": "pdf",
+      "description": "Signed, then a comment added",
+      "n": 10,
+      "suspicious": 0,
+      "inconclusive": 0,
+      "intact": 10,
+      "top_rules": [
+        "TL-META-004",
+        "TL-SIG-004"
+      ]
+    },
+    {
+      "technique": "overlay",
+      "group": "forged",
+      "input": "pdf",
+      "description": "Amount covered and retyped (incremental save)",
+      "n": 10,
+      "suspicious": 10,
+      "inconclusive": 0,
+      "intact": 0,
+      "top_rules": [
+        "TL-LOGIC-001",
+        "TL-REV-002",
+        "TL-FONT-002",
+        "TL-OVL-001"
+      ]
+    },
+    {
+      "technique": "overlay+recalc",
+      "group": "forged",
+      "input": "pdf",
+      "description": "As above, balances also corrected",
+      "n": 10,
+      "suspicious": 10,
+      "inconclusive": 0,
+      "intact": 0,
+      "top_rules": [
+        "TL-REV-002",
+        "TL-GEO-002",
+        "TL-OVL-001",
+        "TL-REV-003"
+      ]
+    },
+    {
+      "technique": "acrobat-style",
+      "group": "forged",
+      "input": "pdf",
+      "description": "Edit markers and editor producer",
+      "n": 10,
+      "suspicious": 10,
+      "inconclusive": 0,
+      "intact": 0,
+      "top_rules": [
+        "TL-EDIT-001",
+        "TL-LOGIC-001",
+        "TL-REV-002",
+        "TL-FONT-002"
+      ]
+    },
+    {
+      "technique": "flattened",
+      "group": "forged",
+      "input": "pdf",
+      "description": "Edit, then history removed by re-saving",
+      "n": 10,
+      "suspicious": 10,
+      "inconclusive": 0,
+      "intact": 0,
+      "top_rules": [
+        "TL-LOGIC-001",
+        "TL-FONT-002",
+        "TL-GEO-001",
+        "TL-OVL-001"
+      ]
+    },
+    {
+      "technique": "signed-then-edited",
+      "group": "forged",
+      "input": "pdf",
+      "description": "Edited after a digital signature",
+      "n": 10,
+      "suspicious": 10,
+      "inconclusive": 0,
+      "intact": 0,
+      "top_rules": [
+        "TL-LOGIC-001",
+        "TL-REV-002",
+        "TL-SIG-002",
+        "TL-FONT-002"
+      ]
+    },
+    {
+      "technique": "invoice-total",
+      "group": "forged",
+      "input": "pdf",
+      "description": "Invoice total inflated at source",
+      "n": 10,
+      "suspicious": 10,
+      "inconclusive": 0,
+      "intact": 0,
+      "top_rules": [
+        "TL-LOGIC-002"
+      ]
+    },
+    {
+      "technique": "scan",
+      "group": "genuine",
+      "input": "scan",
+      "description": "Genuine scan (JPEG q70-85)",
+      "n": 10,
+      "suspicious": 0,
+      "inconclusive": 10,
+      "intact": 0,
+      "top_rules": []
+    },
+    {
+      "technique": "scan-invoice",
+      "group": "genuine",
+      "input": "scan",
+      "description": "Genuine invoice scan",
+      "n": 10,
+      "suspicious": 0,
+      "inconclusive": 10,
+      "intact": 0,
+      "top_rules": []
+    },
+    {
+      "technique": "splice",
+      "group": "forged",
+      "input": "scan",
+      "description": "Region pasted from another scan (saved as PNG)",
+      "n": 10,
+      "suspicious": 0,
+      "inconclusive": 10,
+      "intact": 0,
+      "top_rules": [
+        "TL-IMG-001"
+      ]
+    },
+    {
+      "technique": "copy-move",
+      "group": "forged",
+      "input": "scan",
+      "description": "Block of rows copied within the scan",
+      "n": 10,
+      "suspicious": 10,
+      "inconclusive": 0,
+      "intact": 0,
+      "top_rules": [
+        "TL-IMG-002"
+      ]
+    },
+    {
+      "technique": "rebuilt",
+      "group": "limitation",
+      "input": "pdf",
+      "description": "Rebuilt from scratch in the issuer's generator",
+      "n": 10,
+      "suspicious": 0,
+      "inconclusive": 0,
+      "intact": 10,
+      "top_rules": []
+    }
+  ]
+}

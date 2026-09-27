@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>tamperlint · {{ report.file.name }}</title>
+<style>
+  :root {
+    --bg: #f6f7f5; --panel: #ffffff; --ink: #1b2127; --ink-2: #4a545e; --ink-3: #78828c;
+    --rule: #dde1dc; --high: #b3261e; --high-bg: #fbe9e7; --medium: #a15c00; --medium-bg: #fdf1dc;
+    --low: #1f5f8b; --low-bg: #e4eff7; --info: #5f6b76; --info-bg: #eef0f2;
+    --ok: #1e7a4f; --ok-bg: #e2f3ea; --warn: #8a6d00; --warn-bg: #fbf3d6;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --sans: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #121518; --panel: #1a1f23; --ink: #e6e9ec; --ink-2: #b6bec6; --ink-3: #8b949c;
+      --rule: #2c3338; --high: #f2998f; --high-bg: #3a1d1a; --medium: #f0c071; --medium-bg: #36290f;
+      --low: #8cc3ea; --low-bg: #16293a; --info: #aab4bd; --info-bg: #23292e;
+      --ok: #7fd2a6; --ok-bg: #143025; --warn: #ecd070; --warn-bg: #332b0e;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.55 var(--sans); }
+  main { max-width: 1240px; margin: 0 auto; padding: 28px 20px 60px; }
+  header.top { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 20px; margin-bottom: 8px; }
+  .verdict { font-weight: 700; letter-spacing: .04em; padding: 6px 14px; border-radius: 999px; font-size: 14px; }
+  .v-SUSPICIOUS { background: var(--high-bg); color: var(--high); }
+  .v-INTACT { background: var(--ok-bg); color: var(--ok); }
+  .v-INCONCLUSIVE { background: var(--warn-bg); color: var(--warn); }
+  h1 { font-size: 22px; margin: 0; word-break: break-all; }
+  .meta { color: var(--ink-3); font-size: 13px; display: flex; flex-wrap: wrap; gap: 4px 16px; }
+  .summary { font-size: 16px; margin: 14px 0 22px; color: var(--ink-2); }
+  .grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px; }
+  @media (min-width: 980px) { .grid { grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); } }
+  .panel { background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; padding: 16px; }
+  .panel h2 { font-size: 15px; margin: 0 0 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-3); }
+  .page { position: relative; margin: 0 0 18px; border: 1px solid var(--rule); border-radius: 6px; overflow: hidden; background: #fff; }
+  .page img { display: block; width: 100%; height: auto; }
+  .page .label { position: absolute; left: 8px; top: 8px; background: rgba(0,0,0,.6); color: #fff; font-size: 12px; padding: 2px 8px; border-radius: 4px; }
+  .box { position: absolute; border: 2px solid var(--high); background: rgba(179, 38, 30, .10); border-radius: 2px; }
+  .box.medium { border-color: #d98a00; background: rgba(217, 138, 0, .12); }
+  .box.low, .box.info { border-color: #2f7fb5; background: rgba(47, 127, 181, .10); }
+  .box a { position: absolute; top: -11px; left: -11px; width: 20px; height: 20px; border-radius: 50%; background: var(--high); color: #fff; font-size: 11px; font-weight: 700; display: grid; place-items: center; text-decoration: none; }
+  .box.medium a { background: #d98a00; } .box.low a, .box.info a { background: #2f7fb5; }
+  .finding { border-top: 1px solid var(--rule); padding: 12px 0; }
+  .finding:first-of-type { border-top: 0; padding-top: 0; }
+  .finding:target { background: var(--low-bg); border-radius: 6px; padding: 12px; }
+  .row { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: baseline; }
+  .num { font-family: var(--mono); color: var(--ink-3); font-size: 12px; }
+  .sev { font-size: 12px; font-weight: 700; padding: 1px 8px; border-radius: 999px; text-transform: uppercase; }
+  .s-high { background: var(--high-bg); color: var(--high); } .s-medium { background: var(--medium-bg); color: var(--medium); }
+  .s-low { background: var(--low-bg); color: var(--low); } .s-info { background: var(--info-bg); color: var(--info); }
+  .rule { font-family: var(--mono); font-size: 13px; } .title { font-weight: 600; }
+  .where { color: var(--ink-3); font-size: 13px; }
+  .count { font-size: 12px; font-weight: 600; padding: 1px 8px; border-radius: 999px; background: var(--info-bg); color: var(--info); }
+  ul.more { margin-top: 6px; font-size: 14px; }
+  ul.more li { margin-bottom: 4px; }
+  .msg { margin: 6px 0 0; }
+  details { margin-top: 6px; } summary { cursor: pointer; color: var(--ink-3); font-size: 13px; }
+  pre { background: var(--bg); border: 1px solid var(--rule); border-radius: 6px; padding: 8px 10px; font: 12px/1.45 var(--mono); overflow-x: auto; white-space: pre-wrap; word-break: break-word; }
+  ul.plain { margin: 0; padding-left: 18px; color: var(--ink-2); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  td, th { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--rule); }
+  .foot { margin-top: 26px; color: var(--ink-3); font-size: 12px; }
+  .empty { color: var(--ink-2); }
+</style>
+</head>
+<body>
+<main>
+  <header class="top">
+    <span class="verdict v-{{ report.verdict.value }}">{{ report.verdict.value }}</span>
+    <h1>{{ report.file.name }}</h1>
+  </header>
+  <div class="meta">
+    <span>{{ report.doc_type }}</span>
+    <span>{{ report.file.pages }} page(s)</span>
+    <span>{{ report.file.kind | upper }}</span>
+    <span>evidence score {{ "%.2f" | format(report.score) }} (not a probability)</span>
+    <span title="SHA-256">sha256 {{ report.file.sha256[:16] }}…</span>
+  </div>
+  <p class="summary">{{ report.summary }}</p>
+
+  <div class="grid">
+    <section class="panel" aria-label="Page previews">
+      <h2>Where</h2>
+      {% if preview_error %}<p class="empty">{{ preview_error }}</p>{% endif %}
+      {% if not previews and not preview_error %}<p class="empty">Previews were not included in this report.</p>{% endif %}
+      {% for pv in previews %}
+      <div class="page">
+        <img src="data:image/png;base64,{{ pv.png_b64 }}" alt="Page {{ pv.page }}">
+        <span class="label">page {{ pv.page }}</span>
+        {% for n, g in groups %}
+        {% for f in g.findings if f.page == pv.page and f.bbox %}
+        <div class="box {{ f.severity.value }}" style="left: {{ '%.3f' | format(100 * f.bbox.x0 / pv.width) }}%; top: {{ '%.3f' | format(100 * f.bbox.top / pv.height) }}%; width: {{ '%.3f' | format(100 * f.bbox.width / pv.width) }}%; height: {{ '%.3f' | format(100 * f.bbox.height / pv.height) }}%;">
+          <a href="#f{{ n }}" title="{{ f.rule_id }}: {{ f.title }}">{{ n }}</a>
+        </div>
+        {% endfor %}
+        {% endfor %}
+      </div>
+      {% endfor %}
+    </section>
+
+    <section class="panel" aria-label="Findings">
+      <h2>Findings ({{ groups | length }}{% if report.findings | length > groups | length %} · {{ report.findings | length }} locations{% endif %})</h2>
+      {% if not groups %}<p class="empty">No findings. The checks listed below found no evidence of editing.</p>{% endif %}
+      {% for n, g in groups %}
+      {% set f = g.lead %}
+      <article class="finding" id="f{{ n }}">
+        <div class="row">
+          <span class="num">#{{ n }}</span>
+          <span class="sev s-{{ f.severity.value }}">{{ f.severity.value }}</span>
+          <span class="rule">{{ f.rule_id }}</span>
+          <span class="title">{{ f.title }}</span>
+          {% if g.count > 1 %}<span class="count">{{ g.count }} places</span>{% endif %}
+          <span class="where">{% if f.page %}page {{ f.page }}{% else %}whole file{% endif %}{% if f.revision %} · revision {{ f.revision }}{% endif %} · {{ f.layer.value }} · confidence {{ "%.2f" | format(f.confidence) }}</span>
+        </div>
+        <p class="msg">{{ f.message }}</p>
+        {% if g.count > 1 %}
+        <details><summary>{{ g.count - 1 }} more place(s) with the same finding</summary>
+          <ul class="plain more">
+            {% for o in g.others %}<li>{{ o.message }}</li>{% endfor %}
+          </ul>
+        </details>
+        {% endif %}
+        {% if f.evidence %}
+        <details><summary>Evidence</summary><pre>{{ f.evidence | tojson(indent=2) }}</pre></details>
+        {% endif %}
+      </article>
+      {% endfor %}
+    </section>
+  </div>
+
+  <div class="grid" style="margin-top: 22px;">
+    <section class="panel" aria-label="Checks">
+      <h2>Checks</h2>
+      <table>
+        <thead><tr><th>Detector</th><th>Layer</th><th>Status</th><th>Findings / reason</th></tr></thead>
+        <tbody>
+        {% for d in report.detectors %}
+          <tr><td>{{ d.name }}</td><td>{{ d.layer.value }}</td><td>{{ d.status }}</td><td>{% if d.status == "ran" %}{{ d.findings }}{% else %}{{ d.reason }}{% endif %}</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </section>
+    <section class="panel" aria-label="Limitations">
+      <h2>Read this before acting</h2>
+      <ul class="plain">
+        {% for item in report.limitations %}<li>{{ item }}</li>{% endfor %}
+      </ul>
+    </section>
+  </div>
+
+  <p class="foot">Generated by tamperlint {{ report.tool.version }} on {{ report.generated_at.strftime("%Y-%m-%d %H:%M UTC") }}. Report schema {{ report.schema_version }}. Findings are evidence for a human reviewer, not proof of fraud.</p>
+</main>
+</body>
+</html>

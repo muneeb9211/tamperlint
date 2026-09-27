@@ -1,0 +1,6 @@
+# Store text with LF line endings on every platform; keep documents and images byte-exact.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.pdf binary

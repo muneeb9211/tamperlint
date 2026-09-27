@@ -1,0 +1,20 @@
+name: Bug report
+description: A crash, a wrong result on a synthetic sample, or broken output
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: Use synthetic documents only.
+  - type: input
+    id: env
+    attributes:
+      label: Environment
+      placeholder: tamperlint 0.1.0, Python 3.12, Ubuntu 24.04

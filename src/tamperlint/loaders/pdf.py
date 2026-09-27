@@ -213,9 +213,9 @@ def _read_metadata(pdf: pikepdf.Pdf) -> Metadata:
         # read only: do not sync the XMP back into the document information dictionary
         with pdf.open_metadata(set_pikepdf_as_editor=False, update_docinfo=False) as xmp:
             for key in ("xmp:CreateDate", "xmp:ModifyDate", "xmp:CreatorTool", "pdf:Producer"):
-                value = xmp.get(key)
-                if value:
-                    meta.xmp[key] = str(value)
+                xmp_value = xmp.get(key)
+                if xmp_value:
+                    meta.xmp[key] = str(xmp_value)
     except Exception:
         pass
     try:

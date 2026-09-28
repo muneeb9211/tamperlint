@@ -6,7 +6,7 @@
 <title>tamperlint · {{ report.file.name }}</title>
 <style>
   :root {
-    --bg: #f6f7f5; --panel: #ffffff; --ink: #1b2127; --ink-2: #4a545e; --ink-3: #78828c;
+    --bg: #f6f7f5; --panel: #ffffff; --ink: #1b2127; --ink-2: #4a545e; --ink-3: #5f6973;
     --rule: #dde1dc; --high: #b3261e; --high-bg: #fbe9e7; --medium: #a15c00; --medium-bg: #fdf1dc;
     --low: #1f5f8b; --low-bg: #e4eff7; --info: #5f6b76; --info-bg: #eef0f2;
     --ok: #1e7a4f; --ok-bg: #e2f3ea; --warn: #8a6d00; --warn-bg: #fbf3d6;
@@ -40,10 +40,11 @@
   .page img { display: block; width: 100%; height: auto; }
   .page .label { position: absolute; left: 8px; top: 8px; background: rgba(0,0,0,.6); color: #fff; font-size: 12px; padding: 2px 8px; border-radius: 4px; }
   .box { position: absolute; border: 2px solid var(--high); background: rgba(179, 38, 30, .10); border-radius: 2px; }
-  .box.medium { border-color: #d98a00; background: rgba(217, 138, 0, .12); }
-  .box.low, .box.info { border-color: #2f7fb5; background: rgba(47, 127, 181, .10); }
-  .box a { position: absolute; top: -11px; left: -11px; width: 20px; height: 20px; border-radius: 50%; background: var(--high); color: #fff; font-size: 11px; font-weight: 700; display: grid; place-items: center; text-decoration: none; }
-  .box.medium a { background: #d98a00; } .box.low a, .box.info a { background: #2f7fb5; }
+  .box.medium { border-color: #a15c00; background: rgba(217, 138, 0, .12); }
+  .box.low, .box.info { border-color: #1f5f8b; background: rgba(47, 127, 181, .10); }
+  .box a { position: absolute; top: -11px; left: -11px; width: 20px; height: 20px; border-radius: 50%; background: #b3261e; color: #fff; font-size: 11px; font-weight: 700; display: grid; place-items: center; text-decoration: none; }
+  /* the page preview is always white, so markers keep dark, fixed colours in both themes */
+  .box.medium a { background: #a15c00; } .box.low a, .box.info a { background: #1f5f8b; }
   .finding { border-top: 1px solid var(--rule); padding: 12px 0; }
   .finding:first-of-type { border-top: 0; padding-top: 0; }
   .finding:target { background: var(--low-bg); border-radius: 6px; padding: 12px; }
@@ -89,14 +90,13 @@
       {% if not previews and not preview_error %}<p class="empty">Previews were not included in this report.</p>{% endif %}
       {% for pv in previews %}
       <div class="page">
-        <img src="data:image/png;base64,{{ pv.png_b64 }}" alt="Page {{ pv.page }}">
+        <img src="data:{{ pv.mime }};base64,{{ pv.image_b64 }}" alt="Page {{ pv.page }}">
         <span class="label">page {{ pv.page }}</span>
-        {% for n, g in groups %}
-        {% for f in g.findings if f.page == pv.page and f.bbox %}
+        {% for b in boxes[pv.page] %}
+        {% set f = b.finding %}
         <div class="box {{ f.severity.value }}" style="left: {{ '%.3f' | format(100 * f.bbox.x0 / pv.width) }}%; top: {{ '%.3f' | format(100 * f.bbox.top / pv.height) }}%; width: {{ '%.3f' | format(100 * f.bbox.width / pv.width) }}%; height: {{ '%.3f' | format(100 * f.bbox.height / pv.height) }}%;">
-          <a href="#f{{ n }}" title="{{ f.rule_id }}: {{ f.title }}">{{ n }}</a>
+          <a href="#f{{ b.number }}" title="{{ f.rule_id }}: {{ f.title }}"{% if b.stack %} style="left: {{ b.stack * 22 - 11 }}px"{% endif %}>{{ b.number }}</a>
         </div>
-        {% endfor %}
         {% endfor %}
       </div>
       {% endfor %}

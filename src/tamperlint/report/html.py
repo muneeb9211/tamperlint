@@ -9,8 +9,8 @@ from importlib.resources import files
 
 from jinja2 import Environment, select_autoescape
 
-from tamperlint.models import Report, Severity
-from tamperlint.report.grouping import group_findings
+from tamperlint.models import Finding, Report, Severity
+from tamperlint.report.grouping import FindingGroup, group_findings
 
 PREVIEW_DPI = 90
 MAX_PREVIEW_PAGES = 12
@@ -21,7 +21,18 @@ class Preview:
     page: int
     width: float
     height: float
-    png_b64: str
+    image_b64: str
+    mime: str = "image/png"
+
+
+@dataclass
+class Box:
+    """A finding drawn on a page preview; ``stack`` shifts its number marker sideways when
+    several findings point at the same spot, so none hides another."""
+
+    number: int
+    finding: Finding
+    stack: int = 0
 
 
 def _render_previews(data: bytes, kind: str, pages: list[int]) -> list[Preview]:
@@ -32,11 +43,14 @@ def _render_previews(data: bytes, kind: str, pages: list[int]) -> list[Preview]:
     if kind == "image":
         with Image.open(io.BytesIO(data)) as img:
             width, height = img.size
-            thumb = img.convert("RGB")
+            gray = img.mode in ("L", "LA", "1")
+            thumb = img.convert("L" if gray else "RGB")
         thumb.thumbnail((1100, 1400))
         buf = io.BytesIO()
-        thumb.save(buf, format="PNG", optimize=True)
-        return [Preview(1, float(width), float(height), base64.b64encode(buf.getvalue()).decode())]
+        # Photographs and scans compress far better as JPEG than as PNG.
+        thumb.save(buf, format="JPEG", quality=85, optimize=True)
+        encoded = base64.b64encode(buf.getvalue()).decode()
+        return [Preview(1, float(width), float(height), encoded, "image/jpeg")]
 
     import pypdfium2 as pdfium
 
@@ -78,7 +92,29 @@ def render_html(report: Report, data: bytes | None = None) -> str:
     return template.render(
         report=report,
         groups=groups,
+        boxes=_boxes(groups, previews),
         previews=previews,
         preview_error=preview_error,
         severity_order=[Severity.HIGH, Severity.MEDIUM, Severity.LOW, Severity.INFO],
     )
+
+
+def _boxes(groups: list[tuple[int, FindingGroup]], previews: list[Preview]) -> dict[int, list[Box]]:
+    """Boxes to draw per page, with markers of findings at the same spot stacked side by side."""
+    out: dict[int, list[Box]] = {}
+    for pv in previews:
+        placed: list[Box] = []
+        for number, group in groups:
+            for f in group.findings:
+                if f.page != pv.page or f.bbox is None:
+                    continue
+                near = [
+                    b
+                    for b in placed
+                    if b.finding.bbox is not None
+                    and abs(b.finding.bbox.x0 - f.bbox.x0) < 0.02 * pv.width
+                    and abs(b.finding.bbox.top - f.bbox.top) < 0.015 * pv.height
+                ]
+                placed.append(Box(number, f, stack=len(near)))
+        out[pv.page] = placed
+    return out

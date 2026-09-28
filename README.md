@@ -143,12 +143,12 @@ Before release, tamperlint was run on documents it had never seen
 
 | Documents | Result |
 |---|---|
-| 1,000 PDFs crawled from the web ([SafeDocs](https://digitalcorpora.org/corpora/file-corpora/cc-main-2021-31-pdf-untruncated/)): reports, forms, brochures, scans | 92.4% INTACT, 4.7% INCONCLUSIVE, 2.3% SUSPICIOUS. Of the 23 SUSPICIOUS files, 22 record in their own structure that they were edited after publication; 1 is a false alarm |
+| 1,000 PDFs crawled from the web ([SafeDocs](https://digitalcorpora.org/corpora/file-corpora/cc-main-2021-31-pdf-untruncated/)): reports, forms, brochures, scans | 92.3% INTACT, 4.7% INCONCLUSIVE, 2.4% SUSPICIOUS. Of the 24 SUSPICIOUS files, 23 record in their own structure that they were edited after publication; 1 is a false alarm |
 | 37 genuine statements and invoices printed by Edge, Chrome and LibreOffice | **37 / 37** INTACT |
 | 96 copies forged with PyMuPDF (white box or redaction, with or without fixed totals, incremental or rewritten) | **96 / 96** SUSPICIOUS |
 | 24 copies forged the careful way (text removed, every total fixed, file rewritten) | 24 / 24 INCONCLUSIVE, retyped values highlighted |
 
-Median time on the web PDFs: 2 s per file; 95% finish within 25 s.
+Median time on the web PDFs: 2 s per file; 95% finish within 27 s.
 
 ### On the synthetic corpus
 

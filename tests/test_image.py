@@ -54,6 +54,19 @@ def test_splice_is_localised(scans: dict[str, bytes]) -> None:
     assert grid and grid[0].bbox is not None
 
 
+def test_rows_copied_over_other_rows_are_found() -> None:
+    """Duplicated transactions: whole rows pasted over later rows of the same table. Dates and
+    words repeated from row to row stretch the matched region over rows that were not copied;
+    the copied band inside it must still be found."""
+    from tamperlint.synth.samples import build_samples
+
+    report = check(build_samples()["scan_rows_copied.jpg"], name="scan.jpg")
+    copies = [f for f in report.findings if f.rule_id == "TL-IMG-002"]
+    assert report.verdict is Verdict.SUSPICIOUS
+    assert copies and copies[0].severity.value == "high"
+    assert copies[0].evidence["shift_px"] == [0, 225]  # six rows of 18 pt at 150 dpi
+
+
 def test_sideways_repeat_is_a_hint() -> None:
     """Letterheads and forms repeat logos, stamps and boxes along a line; a stamp or rows
     copied to another place on the page move down."""

@@ -46,6 +46,24 @@ def test_html_report_contains_findings_and_preview(corpus: dict[str, bytes]) -> 
     assert "<script" not in html  # static, no JavaScript
 
 
+def test_html_report_stacks_markers_and_compresses_scans(corpus: dict[str, bytes]) -> None:
+    """Findings at the same spot get side-by-side markers, none hidden under another; scan
+    previews are JPEG, which is several times smaller than PNG for scanned pixels."""
+    import re
+
+    from tamperlint.synth.samples import build_samples
+
+    samples = build_samples()
+    data = samples["statement_edited.pdf"]
+    page = render_html(check(data, name="edited.pdf"), data)
+    offsets = re.findall(r'<a href="#f\d+" title="[^"]*" style="left: (-?\d+)px"', page)
+    assert offsets, "markers at the same spot should be shifted sideways"
+    scan = samples["scan_rows_copied.jpg"]
+    report = render_html(check(scan, name="scan.jpg"), scan)
+    assert "data:image/jpeg;base64," in report
+    assert len(report) < 600_000
+
+
 def test_html_escapes_untrusted_text(corpus: dict[str, bytes]) -> None:
     html = render_html(check(corpus["genuine"], name="<img src=x onerror=alert(1)>.pdf"))
     assert "<img src=x" not in html

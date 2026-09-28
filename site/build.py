@@ -84,7 +84,8 @@ EXAMPLES = [
     Example(
         "scan_rows_copied.jpg",
         "Rows copied inside a scan",
-        "A block of transaction rows copied and pasted further down the same scan.",
+        "Three transaction rows copied over three later rows of the same scan, so the "
+        "statement shows duplicated transactions.",
     ),
 ]
 
@@ -103,10 +104,10 @@ def thumbnail(name: str, data: bytes) -> bytes:
             pdf.close()
     else:
         image = Image.open(io.BytesIO(data))
-    image = image.convert("RGB")
+    image = image.convert("L" if image.mode in ("L", "LA", "1") else "RGB")
     image.thumbnail((THUMB_WIDTH * 2, THUMB_WIDTH * 3))
     out = io.BytesIO()
-    image.save(out, format="PNG", optimize=True)
+    image.save(out, format="JPEG", quality=82, optimize=True)
     return out.getvalue()
 
 
@@ -136,7 +137,7 @@ def card(example: Example, report: Report, stem: str) -> str:
       <article class="card">
         <a class="thumb" href="reports/{stem}.html"
            aria-label="Open the report for {title}">
-          <img src="thumbs/{stem}.png" alt="First page of {html.escape(example.file)}"
+          <img src="thumbs/{stem}.jpg" alt="First page of {html.escape(example.file)}"
                loading="lazy" width="{THUMB_WIDTH}">
         </a>
         <div class="body">
@@ -171,7 +172,7 @@ def main() -> None:
         report = check(data, name=example.file)
         (out / "samples" / example.file).write_bytes(data)
         (out / "reports" / f"{stem}.html").write_text(render_html(report, data), encoding="utf-8")
-        (out / "thumbs" / f"{stem}.png").write_bytes(thumbnail(example.file, data))
+        (out / "thumbs" / f"{stem}.jpg").write_bytes(thumbnail(example.file, data))
         cards.append(card(example, report, stem))
         print(f"{report.verdict.value:12s} {example.file}")
     sha = os.environ.get("GITHUB_SHA", "")[:7]

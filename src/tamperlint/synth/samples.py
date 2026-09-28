@@ -11,9 +11,17 @@ from tamperlint.synth.genuine import make_invoice, make_statement
 def build_samples(seed: int = 1) -> dict[str, bytes]:
     statement, truth = make_statement(seed)
     invoice, invoice_truth = make_invoice(seed)
-    signed = benign.sign(statement)
+    signed = benign.sign(statement, signer=f"{truth.bank} (SPECIMEN)")
     gray = raster.decode(raster.jpeg(raster.scan(raster.render(statement, dpi=150), seed=seed), 80))
-    h, w = gray.shape
+    w = gray.shape[1]
+    scale = 150 / 72
+
+    def row_top(i: int) -> int:  # 12 pt above the row's baseline, in scan pixels
+        return int((truth.page_height - truth.rows[i].cells["balance"].y - 12) * scale)
+
+    def row_bottom(i: int) -> int:  # 6 pt below the baseline: rows are 18 pt apart
+        return int((truth.page_height - truth.rows[i].cells["balance"].y + 6) * scale)
+
     # Debit rows below the first few, so every edit lands mid-table.
     first, second = [i for i, row in enumerate(truth.rows) if row.debit and i >= 3][:2]
     return {
@@ -40,10 +48,9 @@ def build_samples(seed: int = 1) -> dict[str, bytes]:
             seed, total_override=invoice_truth.total + 5_000
         )[0],
         "scan_genuine.jpg": raster.jpeg(gray, 85),
+        # three whole transaction rows pasted over three later rows: duplicated transactions
         "scan_rows_copied.jpg": raster.jpeg(
-            raster.copy_move(
-                gray, (80, int(h * 0.35), w - 80, int(h * 0.35) + 110), (80, int(h * 0.62))
-            ),
+            raster.copy_move(gray, (80, row_top(3), w - 80, row_bottom(5)), (80, row_top(9))),
             90,
         ),
     }

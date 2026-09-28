@@ -17,19 +17,19 @@ programs. None is known to be a forgery, but some were edited after they were fi
 
 | Verdict | Files | Share |
 |---|---:|---:|
-| INTACT | 924 | 92.4% |
+| INTACT | 923 | 92.3% |
 | INCONCLUSIVE | 47 | 4.7% |
-| SUSPICIOUS | 23 | 2.3% |
+| SUSPICIOUS | 24 | 2.4% |
 | Could not be analysed | 6 | 0.6% |
 
-Median time 2.0 s per file, 95th percentile 25 s; no file hit the three-minute limit. The six
+Median time 2.1 s per file, 95th percentile 27 s; no file hit the three-minute limit. The six
 files that could not be analysed were rejected with a clear message: one is password-protected,
 two exceed the 50 MB limit, one is damaged and two are not PDFs at all.
 
 **What the SUSPICIOUS files are.** Their findings were examined one by one:
 
-- **22 record, in the file itself, that they were changed after they were first produced.** In
-  18 a later revision rewrote a page (TL-REV-002), 7 carry Adobe Acrobat text-edit markers
+- **23 record, in the file itself, that they were changed after they were first produced.** In
+  18 a later revision rewrote a page (TL-REV-002), 8 carry Adobe Acrobat text-edit markers
   (TL-EDIT-001), 4 had pages added or removed in a later revision (TL-REV-004), and one was
   changed after it was signed (TL-SIG-002); some show several of these. tamperlint's statement
   about them is correct: the visible content was edited after publication. Whether the edit was

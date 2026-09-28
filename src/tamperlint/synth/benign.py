@@ -55,7 +55,7 @@ def add_sticky_note(data: bytes, text: str = "Received, thanks.") -> bytes:
     return out.getvalue()
 
 
-def _self_signed() -> tuple[object, object]:
+def _self_signed(signer: str = "Demo Bank Ltd (SPECIMEN)") -> tuple[object, object]:
     from asn1crypto import keys, x509
     from cryptography import x509 as cx509
     from cryptography.hazmat.primitives import hashes, serialization
@@ -63,7 +63,7 @@ def _self_signed() -> tuple[object, object]:
     from cryptography.x509.oid import NameOID
 
     key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
-    name = cx509.Name([cx509.NameAttribute(NameOID.COMMON_NAME, "Demo Bank Ltd (SPECIMEN)")])
+    name = cx509.Name([cx509.NameAttribute(NameOID.COMMON_NAME, signer)])
     now = datetime.now(UTC)
     cert = (
         cx509.CertificateBuilder()
@@ -91,17 +91,19 @@ def _self_signed() -> tuple[object, object]:
     return asn_cert, asn_key
 
 
-def sign(data: bytes, field_name: str = "IssuerSignature") -> bytes:
-    """Digitally sign the document with a throw-away self-signed certificate."""
+def sign(
+    data: bytes, field_name: str = "IssuerSignature", signer: str = "Demo Bank Ltd (SPECIMEN)"
+) -> bytes:
+    """Digitally sign the document with a throw-away self-signed certificate for ``signer``."""
     from pyhanko.sign import signers
     from pyhanko_certvalidator.registry import SimpleCertificateStore
 
-    cert, key = _self_signed()
-    signer = signers.SimpleSigner(
+    cert, key = _self_signed(signer)
+    pdf_signer = signers.SimpleSigner(
         signing_cert=cert, signing_key=key, cert_registry=SimpleCertificateStore()
     )
     writer = IncrementalPdfFileWriter(io.BytesIO(data))
     out = signers.sign_pdf(
-        writer, signers.PdfSignatureMetadata(field_name=field_name), signer=signer
+        writer, signers.PdfSignatureMetadata(field_name=field_name), signer=pdf_signer
     )
     return bytes(out.getvalue())

@@ -31,6 +31,7 @@ MIN_SIMILARITY = 0.9
 INK = 200  # grey level below which a pixel counts as ink
 PAGE_SCALE_SHARE = 0.2  # a duplicated region this large (of the image) is a two-up form
 SAME_ROW = 4  # px: a copy moved only sideways repeats a design element
+STRIP = 6  # px: height of the horizontal strips used to find the copied band in a region
 PERIODIC_SIMILARITY = 0.75  # matching this well at another offset means the content repeats
 PERIODIC_MARGIN = 0.1
 
@@ -83,6 +84,41 @@ def _similarity(gray: np.ndarray, box: tuple[int, int, int, int], shift: tuple[i
     if ink.sum() < 200:
         return 0.0
     return float((np.abs(src - dst)[ink] < 24).mean())
+
+
+def _copied_band(
+    gray: np.ndarray, box: tuple[int, int, int, int], shift: tuple[int, int]
+) -> tuple[int, int, int, int] | None:
+    """The tallest horizontal band of ``box`` that is really repeated at ``shift``.
+
+    Keypoints that match by coincidence (dates, words repeated from row to row) can stretch a
+    region over rows that were not copied, which dilutes its similarity below the threshold even
+    though the copied rows inside it match exactly. Strips without ink (the gaps between text
+    rows) neither break nor extend a band.
+    """
+    x0, y0, x1, y1 = box
+    dx, dy = shift
+    h, w = gray.shape
+    if min(x0 + dx, y0 + dy) < 0 or x1 + dx > w or y1 + dy > h:
+        return None
+    src = gray[y0:y1, x0:x1].astype(np.int16)
+    dst = gray[y0 + dy : y1 + dy, x0 + dx : x1 + dx].astype(np.int16)
+    ink = (src < INK) | (dst < INK)
+    same = (np.abs(src - dst) < 24) & ink
+    best: tuple[int, int] | None = None
+    start: int | None = None
+    for top in range(0, y1 - y0, STRIP):
+        n = int(ink[top : top + STRIP].sum())
+        if n < 20:
+            continue
+        if int(same[top : top + STRIP].sum()) >= MIN_SIMILARITY * n:
+            start = top if start is None else start
+            end = min(top + STRIP, y1 - y0)
+            if best is None or end - start > best[1] - best[0]:
+                best = (start, end)
+        else:
+            start = None
+    return None if best is None else (x0, y0 + best[0], x1, y0 + best[1])
 
 
 def _sheet_duplicate(gray: np.ndarray, shift: tuple[int, int]) -> bool:
@@ -191,7 +227,8 @@ class CopyMoveDetector(Detector):
         for (bx, by), pts in sorted(by_shift.items(), key=lambda kv: -len(kv[1])):
             if len(pts) < MIN_POINTS:
                 break
-            for x0, y0, x1, y1 in _regions(np.array(pts, dtype=np.float32), link):
+            for region in _regions(np.array(pts, dtype=np.float32), link):
+                x0, y0, x1, y1 = region
                 # Either a tall region (stamp, signature, block of lines) or a wide band that
                 # spans several columns. Short, narrow matches are repeated words in a column.
                 tall = y1 - y0 >= min_height and x1 - x0 >= min_height
@@ -205,7 +242,22 @@ class CopyMoveDetector(Detector):
                     for ey in (-1, 0, 1)
                 )
                 if best[0] < MIN_SIMILARITY:
-                    continue
+                    # coincidental matches may have stretched the region: keep the copied band
+                    band = _copied_band(
+                        gray, (x0, y0, x1, y1), (shift[0] + best[1], shift[1] + best[2])
+                    )
+                    if band is None or not (
+                        (band[3] - band[1] >= min_height and band[2] - band[0] >= min_height)
+                        or (
+                            band[2] - band[0] >= min_width and band[3] - band[1] >= 0.5 * min_height
+                        )
+                    ):
+                        continue
+                    x0, y0, x1, y1 = band
+                    score = _similarity(gray, band, (shift[0] + best[1], shift[1] + best[2]))
+                    if score < MIN_SIMILARITY:
+                        continue
+                    best = (score, best[1], best[2])
                 dx, dy = shift[0] + best[1], shift[1] + best[2]
                 if _periodic(gray, (x0, y0, x1, y1), (dx, dy), best[0]):
                     continue  # repeating layout (table columns, forms), not a copy

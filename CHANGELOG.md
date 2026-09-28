@@ -50,6 +50,12 @@ printed by Microsoft Edge, Google Chrome and LibreOffice, then forged with PyMuP
   ignored.
 - Pixel checks in PDFs only look at images of paper; JPEG grid evidence inside PDFs and copies
   that only move sideways are low-severity hints.
+- Copy-move detection finds whole rows pasted over other rows of a table (duplicated
+  transactions): matches that repeat from row to row no longer dilute the copied band.
+- Acrobat text-edit markers (TL-EDIT-001) are reported on every scanned page, not only on the
+  pages whose text is analysed.
+- HTML reports: markers of findings at the same spot sit side by side, text and markers meet WCAG
+  AA contrast, and scan previews are JPEG.
 - Double-struck text is read once.
 - Much faster on large and complex files: text and layout checks cover the first 50 pages, pages
   with very complex drawings are skipped with a note, and the hidden-text and baseline checks

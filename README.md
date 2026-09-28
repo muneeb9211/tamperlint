@@ -12,7 +12,10 @@
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-Apache--2.0-green"></a>
 </p>
 
-<p align="center"><img src="docs/assets/report-statement.png" width="820" alt="HTML report: an edited bank statement with the retyped amount highlighted and eight findings explained"></p>
+<p align="center"><b><a href="https://muneeb9211.github.io/tamperlint/">See the example reports</a></b>: edited statements, an inflated invoice and
+copied scan rows, each finding explained.</p>
+
+<p align="center"><a href="https://muneeb9211.github.io/tamperlint/reports/statement_edited.html"><img src="docs/assets/report-statement.png" width="820" alt="HTML report: an edited bank statement with the retyped amount highlighted and eight findings explained"></a></p>
 
 Edited bank statements, altered salary slips, changed grades and inflated invoices reach lenders,
 insurers, universities and HR teams every day, and most are still checked by eye. tamperlint
